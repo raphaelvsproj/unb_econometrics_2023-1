@@ -1,0 +1,2247 @@
+---
+title: "Trabalho Final de Econometria (2023-1) - 1ª Parte"
+output: 
+  html_document:
+    highlight: textmate
+    includes:
+      in_header: cabecalho.html
+    theme: flatly
+    number_sections: yes
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+---
+
+**Análise sobre os rendimentos e a participação na força de trabalho da população da região nordeste brasileira (2013-2015) a partir da PNAD Contínua**
+
+<br>
+
+**Professor(a):** Maria Eduarda Tannuri Pianto
+
+<br>
+
+**Alunos (Grupo 2):**
+
+1.  Glauciane Martins Rodrigues -- Matrícula: 180121383\
+2.  Luiz Mário -- Matrícula: 170121941\
+3.  Raphael Vieira dos Santos -- Matrícula: 190152974\
+4.  Tauane Gabriela Costa -- Matrícula: 202036240
+
+**Entrega:** 21/07/2023
+
+<br>
+<br>
+<br>
+
+# Introdução
+
+<p style="text-align: justify;">Este trabalho tem como objetivo examinar as implicações das discrepâncias raciais nos salários dos indivíduos, com foco na Região Nordeste do Brasil. Para realizar essa análise, utilizamos a Pesquisa Nacional de Amostra Domiciliar Contínua (PNADC), conduzida em todo o país pelo Instituto Brasileiro de Geografia e Estatística (IBGE). Os dados utilizados foram obtidos a partir das bases da Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio).</p>  
+  
+<p style="text-align: justify;">Para a análise dos dados e as devidas inferências estatísticas, empregamos a linguagem estatística R e optamos por utilizar o RMarkdown, uma abordagem que combina a facilidade de escrita e a interpretação dos resultados com a apresentação dos códigos e gráficos gerados.</p>  
+  
+<p style="text-align: justify;">Os dados utilizados neste trabalho são provenientes do painel 3 da PNADC, que abrange dados trimestrais dos anos de 2013 a 2015, totalizando 2.866.552 observações. Esse amplo conjunto de dados abrange as 12 Unidades Federativas do Brasil, permitindo uma análise abrangente das disparidades salariais relacionadas às diferenças raciais na Região Nordeste.</p>
+  
+<p style="text-align: justify;">Para garantir uma análise abrangente das variáveis relevantes, levamos em consideração diversos aspectos. Primeiramente, exploramos as características demográficas da população, como gênero, idade e etnia, com o intuito de compreender melhor o contexto em que os salários são determinados. Por fim, examinamos as características do trabalho, incluindo o tipo de ocupação, e a influência dos anos de estudo para os salários calculados em valores nominais por hora. Levamos em conta, com este trabalho, que esses fatores contribuem para uma análise preliminar das disparidades de renda relacionadas às diferenças raciais na Região Nordeste. Vale ressaltar que os aspectos relacionados ao desemprego não serão analisados nesta modelagem, uma vez que a variável dependente será o comportamento do salário, dadas as características demográficas da população.</p>  
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+# Objetivo da Análise
+
+<p style="text-align: justify;">O trabalho terá como objetivo **estudar os rendimentos e a participação na força de trabalho da população da região Nordeste, com foco na diferença racial**, a partir dos dados da *Pesquisa Nacional por Amostra de Domicílio - PNAD*, Contínua (trimestral), para os anos de 2013 a 2015.</p>  
+  
+<br>
+<br>
+  
+**1ª parte**  
+  
+<p style="text-align: justify;">Primeiro será necessário criar todas as variáveis relevantes para o trabalho.</p>  
+  
+*Exemplos:*  
+  
+<p style="text-align: justify;">Dummy de área urbana, dummies de estado, dummy de chefe de domicílio, número de filhos, dummy para cônjuge ou companheiro(a), dummy de sexo, (homem ou mulher), dummies de raça, anos de educação, dummies para cada um dos níveis educacionais (até 4 anos , fundamental completo, médio completo, superior completo). Na criação da dummy ou dummies racial(s), juntar amarelos e brancos e juntar os indígenas com os pretos ou pardos, já que representam um percentual muito pequeno da população.</p>  
+  
+<p style="text-align: justify;">Será necessário realizar gráficos e tabelas com estatísticas descritivas das variáveis criadas, com atenção especial às definições das variáveis na PNADC, fazendo a estatística descritiva para o grupo etário a ser incluído: 14 a 65 anos. Para o grupo etário incluído na análise, apenas para os indivíduos que trabalham (população em idade ativa - PIA), elaborar tabela que inclua média, desvio-padrão, mínimo e máximo dos rendimentos mensais, inserindo uma linha para cada um dos seguintes grupos : Empregado com carteira de trabalho assinada (formal), Empregado sem carteira de trabalho assinada (informal), Trabalhador doméstico (juntar formal e informal), Funcionário público estatutário ou militar, Empregador, Conta própria, Trabalhador familiar auxiliar.</p>  
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+# Efetuando a Análise da Estatística Descritiva (1ª Parte)  
+  
+É necessário seguir alguns passos importantes.  
+  
+## Passo 1: Carregar os pacotes de dados  
+  
+<p style="text-align: justify;">Como efetuaremos toda essa análise a partir do ambiente de desenvolvimento integrado (IDE) *Rstudio*, antes de mais nada, precisamos selecionar o diretório de trabalho via `Session/Set Working Directory/Choose Directory`.</p>   
+
+<p style="text-align: justify;">Na sequência, iniciamos a instalação e carregamento dos pacotes de dados que serão utilizados. Vale dizer que nem todos os códigos aparecerão antes dos resultados pretendidos (gráficos e tabelas), mas iniciaremos reportando a fim de justificarmos essa etapa do trabalho.</p>  
+  
+```{r, warning=FALSE, message=FALSE}
+Sys.setenv(TMPDIR = "C:/R-Temp") # Esse diretório temporário foi retificado por ser mais curto
+
+library(pacman)
+
+# Definir os pacotes a serem utilizados
+pacman::p_load(dplyr, ggplot2, car, knitr, xtable, tidyr, rstatix, lmtest, ggpubr, data.table, car, GGally, margins, plm, censReg, stargazer, rstatix, lmtest, highcharter, plotly, writexl, QuantPsyc, psych, scatterplot3d, MVN, emmeans, kableExtra, fastDummies, ivreg, easystats)
+
+# Carregar os pacotes necessários
+library(dplyr)
+library(ggplot2)
+library(foreign)
+library(lmtest)
+library(knitr)
+library(tidyr)
+library(tidyverse)
+library(magrittr)
+library(clubSandwich)
+library(lmtest)
+library(broom)
+library(stargazer)
+library(modelsummary)
+library(jtools)
+library(data.table)
+library(rstatix)
+library(ggpubr)
+library(car)
+library(GGally)
+library(emmeans)
+library(kableExtra)
+library(DT)
+library(plotly)
+library(highcharter)
+library(plm)
+library(xtable)
+library(margins)
+library(censReg)
+library(stargazer)
+library(fastDummies)
+library(ivreg)
+library(easystats)
+
+
+
+```
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+## Passo 2: Inserindo e tratando os dados do Painel 3 da PNAD Contínua  
+  
+A seleção do painel da PNADC, com os dados de interesse, seguiram o seguinte recorte:  
+  
+```{r, warning=FALSE, message=FALSE}
+Sys.setenv(TMPDIR = "C:/R-Temp") # Esse diretório temporário foi retificado por ser mais curto
+Painel3_PNADC <- data.table::fread('PNAD_painel3.csv')
+```
+  
+<br>  
+  
+<p style="text-align: justify;">Realizaremos as análises descritivas de cada uma das variáveis consideradas relevantes para a análise de rendimentos e participação na força de trabalho, com ênfase em sua relação com a educação. Para as variáveis de interesse, serão examinados indicadores estatísticos como média, mediana, valores mínimos e máximos, que irão auxiliar no mapeamento das informações e na compreensão da relevância dos dados levantados no escopo da análise.</p>  
+  
+As variáveis escolhidas foram:  
+  
+1. `Ano`: Delimita o ano da observação  
+2. `Trimestre`: Delimita o semestre da observação  
+3. `UF`: Delimita geograficamente as observações por Unidades Federativas  
+4. `UPA`: Identificação das observações (unidade primária de amostragem)
+5. `V1008`: Número de seleção do domicílio
+6. `V1016`: Número da entrevista no domicílio
+
+7. `V1022`: Situação do domicílio
+8. `V1023`: TIpo de área (se capital, resto da região metropolitana, RIDE, etc.)
+  
+9. `V2001`: Número de pessoas no domicílio  
+  
+10. `V2003`: Número de ordem (pessoas no domicílio)
+
+11. `V2005`: Condição do entrevistado no domicílio
+
+12. `V2007`: Sexo do indivíduo (1 = homem, 2 = mulher)  
+13. `V2009`: Idade do morador na data de referência (em anos)  
+14. `V2010`: Cor ou raça  
+15. `V3001`: Alfabetizado (1 = sim, 2 = não)  
+16. `VD3004`: Nível de educação mais alto alcançado (5 anos ou mais de idade)  
+17. `VD3005`: Anos de estudo (5 anos ou mais de idade, para fundamental de 9 anos)
+18. `V4012`: Tipo de trabalho  
+19. `VD4001`: Condição em relação à força de trabalho na semana de referência para pessoas de 14 anos ou mais de idade  
+
+20. `VD4002`: Condição de ocupação na semana de referência para pessoas de 14 anos ou mais de idade 
+
+21. `VD4018`: Com ou Sem Rendimento  
+  
+22. `VD4019`: Rendimento mensal habitual de todos os trabalhos  
+  
+23. `V4039`: Quantas horas trabalhadas por semana  
+24. `V403312`: Rendimento mensal efetivo de todos os trabalhos  
+  
+<br>
+<br>
+  
+```{r, warning=FALSE, message=FALSE}
+# Diretório temporário
+
+# Separando o banco de dados da PNADC (Painel3) por Estados
+estados_nordeste <- c(21, 22, 23, 24, 25, 26, 27, 28, 29)
+Painel3 <- Painel3_PNADC[UF %in% estados_nordeste, .(Ano, Trimestre, UF, UPA, V1008, V1016, V1022, V1023, V2001, V2003, V2005, V2007, V2009, V2010, V3001, VD3004, VD3005, V4012, VD4001, VD4002, VD4018, VD4019, V4039, V403312)]
+Painel3[is.na(Painel3)] <- 0
+
+# Criar uma coluna "Estado" e fazer o match com a coluna "UF"
+estado_ufs <- c(
+  "Maranhão", "Piauí", "Ceará", "Rio Grande do Norte", "Paraíba",
+  "Pernambuco", "Alagoas", "Sergipe", "Bahia"
+)
+estado_ufs <- setNames(estado_ufs, 21:29)
+Painel3$Estado <- estado_ufs[as.character(Painel3$UF)]
+rm(Painel3_PNADC)
+
+
+Painel3 <- arrange(Painel3, Ano, Trimestre)
+glimpse(Painel3)
+
+```
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+## Passo 3: Criando variáveis *dummies*  
+  
+Para esta análise optamos por criar as respectivas variáveis dummy:  
+  
+### Dummy de raça (1 = pretos/pardos/indígenas/indiferentes, 0 = brancos/amarelos):  
+  
+```{r, warning=FALSE, message=FALSE}
+Painel3 <- Painel3 %>% mutate(dummy_raca = ifelse(V2010 %in%  c(1,3), 0, 1))
+```
+  
+<br>
+  
+### Dummy de sexo (1 = homem, 0 = mulher):  
+  
+```{r, warning=FALSE, message=FALSE}
+Painel3 <- Painel3 %>% mutate(dummy_sexo = ifelse(V2007 == 1, 1, 0))
+```
+  
+<br>
+  
+### Dummy para alfabetização (1 = sim, 0 = não):  
+  
+```{r, warning=FALSE, message=FALSE}
+Painel3 <- Painel3 %>% mutate(dummy_alfabetizado = ifelse(V3001 == 1, 1, 0))
+```
+  
+<br>
+  
+### Dummy para trabalho remunerado (1 = remunerado, 0 = não remunerado):  
+  
+```{r, warning=FALSE, message=FALSE}
+Painel3 <- Painel3 %>% mutate(dummy_remunerado = ifelse(VD4018 == 1, 1, 0))
+```
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+## Passo 4: Organizando os grupos da População em Idade Ativa - PIA  
+  
+### Filtrando o grupo etário para População em Idade Ativa - PIA (14 a 65 anos)  
+  
+<p style="text-align: justify;">A População em Idade Ativa (PIA) refere-se ao grupo de indivíduos em uma determinada população que está apto a participar do mercado de trabalho. Essa faixa etária varia de acordo com a definição adotada em cada país, mas geralmente abrange pessoas com idades entre 14 e 65 anos.</p>  
+  
+<p style="text-align: justify;">A análise da PIA é de extrema importância para a compreensão da dinâmica econômica e social de uma sociedade. Ao examinar a PIA em pesquisas populacionais, como a PNAD Contínua, é possível obter informações valiosas sobre o tamanho, a composição e as características da força de trabalho de um país ou região.</p>  
+  
+<p style="text-align: justify;">A PIA desempenha um papel fundamental na formulação e implementação de políticas públicas voltadas para o mercado de trabalho e o desenvolvimento econômico. Ao compreender a estrutura etária da PIA, é possível identificar desafios e oportunidades específicos, como a demanda por emprego, o envelhecimento da força de trabalho, a qualificação educacional e as desigualdades socioeconômicas.</p>  
+  
+<p style="text-align: justify;">A análise da PIA permite identificar grupos populacionais que estão mais vulneráveis ao desemprego, à informalidade, à discriminação e a outras formas de exclusão social. Com base nesses dados, as políticas públicas podem ser direcionadas para promover a inclusão, estimular o emprego, melhorar as condições de trabalho e reduzir as desigualdades de gênero, raça/etnia e educação.</p>  
+  
+<p style="text-align: justify;">Portanto, a análise da PIA em pesquisas populacionais, como a PNAD Contínua, fornece subsídios importantes para a formulação de políticas públicas mais efetivas e direcionadas, visando o desenvolvimento socioeconômico, a redução da pobreza, a promoção da igualdade de oportunidades e o bem-estar da população em geral.</p>  
+  
+```{r, warning=FALSE, message=FALSE}
+# Primeira etapa de filtragem (idade maior ou igual a 14)
+Painel3_pia_temp <- Painel3 %>% 
+  filter(V2009 >= 14)
+
+# Segunda etapa de filtragem (idade menor ou igual a 65)
+Painel3_pia <- Painel3_pia_temp %>%
+  filter(V2009 <= 65)
+
+# Limpando o dataframe temporário (opcional)
+rm(Painel3_pia_temp)
+```
+  
+<br>
+<br>
+<br>
+  
+### Analisando a PIA pelos grupos de **Idade**, **Estado** e **Participação na força de trabalho**.   
+  
+<p style="text-align: justify;">Inicialmente vamos separar o grupo da PIA em pessoas que trabalham com e sem rendimentos, e aquelas que não trabalham e não possuem rendimento. A tabela abaixo categoriza os grupos conforme a idade, apresentando uma coluna com o total de pessoas analisadas na PNADC, e o percentual dentro do grupo da idade respectiva.</p>
+  
+Os grupos analisados foram:  
+  
+1. `VD4001 = 1 & dummy_remunerado = 1` = "Trabalha com rendimentos",  
+2. `VD4001 = 1 & dummy_remunerado = 0` = "Trabalha sem rendimentos",  
+3. `VD4001 = 2 & dummy_remunerado = 1` = "Não trabalha e tem rendimentos",  
+4. `VD4001 = 2 & dummy_remunerado = 0` = "Não trabalha e não tem rendimentos".  
+  
+<p style="text-align: justify;">Como veremos abaixo, o grupo **"Não trabalha e tem rendimentos"** não foi capturado pela filtragem dos dados. Dessa forma, podemos entender o grupo **"Não trabalha e não tem rendimentos"** como os **indivíduos que não têm ocupação**.</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_filtrado <- Painel3_pia %>% dplyr::select(UPA, V2009, V4012, VD4001, dummy_remunerado, Estado)
+
+# Renomear as categorias de trabalho
+Painel3_pia_filtrado <- Painel3_pia_filtrado %>%
+  mutate(Categoria = case_when(
+    VD4001 == 1 & dummy_remunerado == 1 ~ "Trabalha com rendimentos",
+    VD4001 == 1 & dummy_remunerado == 0 ~ "Trabalha sem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 1 ~ "Não trabalha e tem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 0 ~ "Não trabalha e não tem rendimentos"))
+
+# Criar tabela de contagem
+tabela_contagem1 <- Painel3_pia_filtrado %>%
+  group_by(V2009, Categoria, Estado) %>%
+  summarize(Numero_Pessoas = n()) %>%
+  ungroup()
+
+# Renomear a coluna "V2009" para "Idade (anos)"
+tabela_contagem1 <- tabela_contagem1 %>%
+  dplyr::rename("Idade (anos)" = V2009)
+
+# Criar a tabela
+tabela_cont1 <- datatable(tabela_contagem1, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont1
+
+
+```
+  
+<br>
+  
+Abaixo vemos o total por Estado:  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_filtrado <- Painel3_pia %>% dplyr::select(V2009, VD4001, dummy_remunerado, Estado)
+
+# Renomear as categorias de trabalho
+Painel3_pia_filtrado <- Painel3_pia_filtrado %>%
+  mutate(Categoria = case_when(
+    VD4001 == 1 & dummy_remunerado == 1 ~ "Trabalha com rendimentos",
+    VD4001 == 1 & dummy_remunerado == 0 ~ "Trabalha sem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 1 ~ "Não trabalha e tem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 0 ~ "Não trabalha e não tem rendimentos"))
+
+# Criar tabela de contagem
+tabela_contagem2 <- Painel3_pia_filtrado %>%
+  group_by(Categoria, Estado) %>%
+  summarize(Numero_Pessoas = n()) %>%
+  ungroup()
+
+# Calcular o somatório do número de pessoas por Estado
+tabela_somatorio1 <- tabela_contagem2 %>%
+  group_by(Estado) %>%
+  summarize(Total_Pessoas = sum(Numero_Pessoas)) %>%
+  ungroup()
+
+# Juntar as tabelas de contagem e somatório
+tabela_final <- tabela_contagem2 %>%
+  left_join(tabela_somatorio1, by = "Estado") %>%
+  mutate(Percentual = (Numero_Pessoas / Total_Pessoas) * 100)
+
+# Organizar a tabela em ordem alfabética por Estado
+tabela_final <- tabela_final %>%
+  arrange(Estado)
+
+# Criar a tabela
+tabela_cont2 <- datatable(tabela_final, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont2
+
+```
+  
+<br>
+<br>
+<br>
+  
+#### Ilustrando os grupos com as participações na força de trabalho em gráficos de barras dentro do grupo idade (14 a 65 anos) em toda a Região Nordeste  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_filtrado <- Painel3_pia %>% dplyr::select(V2009, VD4001, dummy_remunerado, Estado)
+
+# Renomear as categorias de trabalho
+Painel3_pia_filtrado <- Painel3_pia_filtrado %>%
+  mutate(Categoria = case_when(
+    VD4001 == 1 & dummy_remunerado == 1 ~ "Trabalha com rendimentos",
+    VD4001 == 1 & dummy_remunerado == 0 ~ "Trabalha sem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 1 ~ "Não trabalha e tem rendimentos",
+    VD4001 == 2 & dummy_remunerado == 0 ~ "Não trabalha e não tem rendimentos"))
+
+# Criar tabela de contagem
+tabela_contagem3 <- Painel3_pia_filtrado %>%
+  group_by(Categoria, Estado) %>%
+  summarize(Numero_Pessoas = n()) %>%
+  ungroup()
+
+# Calcular o somatório do número de pessoas por Estado
+tabela_somatorio2 <- tabela_contagem3 %>%
+  group_by(Estado) %>%
+  summarize(Total_Pessoas = sum(Numero_Pessoas)) %>%
+  ungroup()
+
+# Juntar as tabelas de contagem e somatório
+tabela_final2 <- tabela_contagem3 %>%
+  left_join(tabela_somatorio2, by = "Estado") %>%
+  mutate(Percentual = (Numero_Pessoas / Total_Pessoas) * 100)
+
+# Criar gráfico de barras
+grafico_pia1 <- ggplot(tabela_final2, aes(x = Estado, y = Percentual, fill = Categoria)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(x = "Estado", y = "Percentual", fill = "Categoria de Trabalho") +
+  ggtitle("Percentual de Indivíduos por Categoria de Trabalho") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Categoria de Trabalho")
+
+# Exibir o gráfico
+print(grafico_pia1)
+
+```
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Gráfico 1: Não trabalha e não tem rendimentos
+grafico_01 <- ggplot(Painel3_pia_filtrado, aes(x = V2009, fill = Categoria)) +
+  geom_bar(data = filter(Painel3_pia_filtrado, Categoria == "Não trabalha e não tem rendimentos"),
+           stat = "count", width = 0.7, position = "stack") +
+  labs(x = "Idade (anos)", y = "Quantidade de Pessoas",
+       title = "Não trabalha e não tem rendimentos (Nordeste, 2013 a 2015 - PNADC)") +
+  theme_minimal() + theme(legend.position = "bottom")
+grafico_01
+```
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Gráfico 2: Trabalha com rendimentos
+grafico_02 <- ggplot(Painel3_pia_filtrado, aes(x = V2009, fill = Categoria)) +
+  geom_bar(data = filter(Painel3_pia_filtrado, Categoria == "Trabalha com rendimentos"),
+           stat = "count", width = 0.7, position = "stack") +
+  labs(x = "Idade (anos)", y = "Quantidade de Pessoas",
+       title = "Trabalha com rendimentos (Nordeste, 2013 a 2015 - PNADC)") +
+  scale_fill_manual(values = "#008000") +
+  theme_minimal() + theme(legend.position = "bottom")
+
+grafico_02
+
+```
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Gráfico 3: Trabalha sem rendimentos
+grafico_03 <- ggplot(Painel3_pia_filtrado, aes(x = V2009, fill = Categoria)) +
+  geom_bar(data = filter(Painel3_pia_filtrado, Categoria == "Trabalha sem rendimentos"),
+           stat = "count", width = 0.7, position = "stack") +
+  labs(x = "Idade (anos)", y = "Quantidade de Pessoas",
+       title = "Trabalha sem rendimentos (Nordeste, 2013 a 2015 - PNADC)") +
+  scale_fill_manual(values = "blue") +
+  theme_minimal() + theme(legend.position = "bottom")
+grafico_03
+```
+  
+<br>
+<br>
+<br>
+  
+### Analisando a PIA pelos fatores de **Raça** e **Gênero** na **Participação na força de trabalho**  
+  
+<p style="text-align: justify;">Além de analisar a População em Idade Ativa (PIA) como um todo, é fundamental considerar a segmentação por sexo e raça ao realizar estudos e pesquisas populacionais, como no caso da pesquisa em questão, em que utilizamos as variáveis dummy "dummy_sexo" e "dummy_raca".</p>  
+  
+<p style="text-align: justify;">Ao separar a PIA por sexo, é possível compreender as particularidades e desigualdades existentes entre homens e mulheres no mercado de trabalho. A segmentação por sexo permite identificar diferenças salariais, oportunidades de emprego, níveis de ocupação, participação em setores específicos da economia e a presença de questões como a divisão desigual das responsabilidades domésticas e cuidado familiar. Essas informações são essenciais para a formulação de políticas públicas que promovam a igualdade de gênero, a equidade salarial e o empoderamento das mulheres.</p>  
+  
+<br>
+  
+#### Analisando os componentes de Raça e Gênero em toda a Região Nordeste  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrando dados para homens e mulheres de cada raça
+total_ppi_homens <- filter(Painel3_pia, dummy_raca == 1, dummy_sexo == 1)
+total_brancos_homens <- filter(Painel3_pia, dummy_raca == 0, dummy_sexo == 1)
+total_brancos_mulheres <- filter(Painel3_pia, dummy_raca == 0, dummy_sexo == 0)
+total_ppi_mulheres <- filter(Painel3_pia, dummy_raca == 1, dummy_sexo == 0)
+
+# Contando o número de homens e mulheres
+total_homens <- nrow(total_ppi_homens) + nrow(total_brancos_homens)
+total_mulheres <- nrow(total_brancos_mulheres) + nrow(total_ppi_mulheres)
+
+# Calculando os percentuais de cada raça por gênero
+percentual_homens_brancos <- (nrow(total_brancos_homens) / total_homens) * 100
+percentual_homens_ppi <- (nrow(total_ppi_homens) / total_homens) * 100
+percentual_mulheres_brancas <- (nrow(total_brancos_mulheres) / total_mulheres) * 100
+percentual_mulheres_ppi <- (nrow(total_ppi_mulheres) / total_mulheres) * 100
+
+# Criando um data frame com os percentuais
+tabela_contagem4 <- data.frame(
+  Gênero = c("Homem", "Homem", "Mulher", "Mulher"),
+  Raça = c("Branco", "PPI", "Branco", "PPI"),
+  Percentual = c(percentual_homens_brancos, percentual_homens_ppi, percentual_mulheres_brancas, percentual_mulheres_ppi),
+  Total = c(nrow(total_brancos_homens), nrow(total_ppi_homens), nrow(total_brancos_mulheres), nrow(total_ppi_mulheres))
+)
+
+kable(head(tabela_contagem4)) %>% 
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Plotando o gráfico stacked
+grafico_04 <- ggplot(tabela_contagem4, aes(x = Gênero, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Gênero", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Região Nordeste, 2013-2015 - PNADC)") +
+  theme_minimal()
+print(grafico_04)
+```
+  
+<br>
+<br>
+  
+#### Analisando os componentes de Raça e Gênero agrupados por Estados na Região Nordeste  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+df_percentuais_estados <- Painel3_pia %>%
+  mutate(Gênero = case_when(dummy_sexo == 1 ~ "Homens",
+                            dummy_sexo == 0 ~ "Mulheres"),
+         Raça = case_when(dummy_raca == 1 ~ "PPI",
+                          dummy_raca == 0 ~ "Brancos/Amarelos")) %>%
+  group_by(Estado, Gênero, Raça) %>%
+  summarize(Total = n()) %>%
+  ungroup() %>%
+  group_by(Estado, Gênero) %>%
+  mutate(Percentual = (Total / sum(Total)) * 100) %>%
+  ungroup()
+
+# Criar a tabela
+tabela_percentuais_estados <- datatable(df_percentuais_estados, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_percentuais_estados
+
+```
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados apenas para a região nordeste
+dados_nordeste <- filter(Painel3_pia, Estado %in% c("Alagoas", "Bahia", "Ceará", "Maranhão", "Paraíba", "Pernambuco", "Piauí", "Rio Grande do Norte", "Sergipe"))
+
+# Calcular o percentual de raça por gênero
+df_percentuais_nordeste <- dados_nordeste %>%
+  mutate(Gênero = case_when(dummy_sexo == 1 ~ "Homens",
+                            dummy_sexo == 0 ~ "Mulheres"),
+         Raça = case_when(dummy_raca == 1 ~ "Pretos/Pardos/Indígenas",
+                          dummy_raca == 0 ~ "Brancos/Amarelos")) %>%
+  group_by(Estado, Gênero, Raça) %>%
+  summarize(Total = n()) %>%
+  ungroup() %>%
+  group_by(Estado, Gênero) %>%
+  mutate(Percentual = (Total / sum(Total)) * 100) %>%
+  ungroup()
+
+# Gráfico para Mulheres
+grafico_mulheres <- ggplot(filter(df_percentuais_nordeste, Gênero == "Mulheres"), aes(x = Estado, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(x = "Estado", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Mulheres - Região Nordeste)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardos/Indígenas"))
+
+# Gráfico para Homens
+grafico_homens <- ggplot(filter(df_percentuais_nordeste, Gênero == "Homens"), aes(x = Estado, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(x = "Estado", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Homens - Região Nordeste)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardos/Indígenas"))
+
+# Exibir os gráficos
+print(grafico_mulheres)
+print(grafico_homens)
+
+```
+  
+<br>
+  
+<p style="text-align: justify;">Já a segmentação por raça/etnia na análise da PIA é fundamental para compreender as desigualdades socioeconômicas e a discriminação racial presentes no mercado de trabalho. Ao separar a população entre Brancos/Amarelos e Pretos/Pardos/Indígenas, é possível identificar diferenças na taxa de desemprego, nos níveis de escolaridade, nas oportunidades de ascensão profissional e nas condições de trabalho. Essa análise contribui para a formulação de políticas de inclusão, combate ao racismo estrutural e promoção da igualdade racial.</p>  
+  
+<p style="text-align: justify;">Portanto, ao analisar a PIA separadamente por sexo e raça, é possível evidenciar as desigualdades e as disparidades existentes, permitindo uma compreensão mais abrangente da realidade social e econômica. Essa abordagem segmentada é fundamental para que as políticas públicas sejam mais efetivas e direcionadas, visando a redução das desigualdades de gênero e raça, a promoção da diversidade e a construção de uma sociedade mais justa e inclusiva para todos.</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_raca <- Painel3_pia %>% dplyr::select(UPA, V2009, VD4001, dummy_remunerado, dummy_raca, dummy_sexo, Estado)
+
+# Renomear as categorias de trabalho por sexo e raça
+Painel3_pia_raca <- Painel3_pia_raca %>%
+  mutate(Raça = case_when(
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 1 ~ "Homens Pretos/Pardos/Indígenas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Pretos/Pardos/Indígenas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Pretos/Pardos/Indígenas que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 1 ~ "Mulheres Pretas/Pardas/Indígenas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Pretas/Pardas/Indígenas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Pretas/Pardas/Indígenas que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 1 ~ "Homens Brancos/Amarelos que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Brancos/Amarelos que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Brancos/Amarelos que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 1 ~ "Mulheres Brancas/Amarelas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Brancas/Amarelas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Brancas/Amarelas que não Trabalham e não têm rendimentos"))
+
+# Criar tabela de contagem
+tabela_contagem_raca <- Painel3_pia_raca %>%
+  group_by(V2009, Raça, Estado) %>%
+  summarize(`Pessoas (qtd.)` = n()) %>%
+  ungroup()
+
+# Renomear a coluna "V2009" para "Idade (anos)"
+tabela_contagem_raca <- tabela_contagem_raca %>%
+  dplyr::rename("Idade (anos)" = V2009)
+
+# Criar a tabela
+tabela_cont2 <- datatable(tabela_contagem_raca, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont2
+
+```
+  
+<br>
+  
+Analisando o percentual total dos grupos **Gênero** e **Estado** pelo status de ocupação:  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_raca <- Painel3_pia %>% dplyr::select(V2009, VD4001, dummy_remunerado, dummy_raca, dummy_sexo, Estado)
+
+# Renomear as categorias de trabalho por sexo e raça
+Painel3_pia_raca <- Painel3_pia_raca %>%
+  mutate(Raça = case_when(
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 1 ~ "Homens Pretos/Pardos/Indígenas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Pretos/Pardos/Indígenas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 1 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Pretos/Pardos/Indígenas que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 1 ~ "Mulheres Pretas/Pardas/Indígenas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Pretas/Pardas/Indígenas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 1 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Pretas/Pardas/Indígenas que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 1 ~ "Homens Brancos/Amarelos que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Brancos/Amarelos que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 0 & dummy_sexo == 1 & dummy_remunerado == 0 ~ "Homens Brancos/Amarelos que não Trabalham e não têm rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 1 ~ "Mulheres Brancas/Amarelas que Trabalham com rendimentos",
+    VD4001 == 1 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Brancas/Amarelas que Trabalham sem rendimentos",
+    VD4001 == 2 & dummy_raca == 0 & dummy_sexo == 0 & dummy_remunerado == 0 ~ "Mulheres Brancas/Amarelas que não Trabalham e não têm rendimentos"))
+
+# Criar tabela de contagem
+tabela_contagem_raca <- Painel3_pia_raca %>%
+  group_by(Estado, dummy_sexo, dummy_raca, VD4001, dummy_remunerado) %>%
+  summarize(`Pessoas (qtd.)` = n()) %>%
+  ungroup()
+
+# Adicionar as colunas de Gênero, Raça, Ocupação e Remuneração
+tabela_contagem_raca <- tabela_contagem_raca %>%
+  mutate(Gênero = case_when(
+    dummy_sexo == 1 ~ "Homens",
+    dummy_sexo == 0 ~ "Mulheres"
+  ),
+  Raça = case_when(
+    dummy_raca == 1 ~ "PPI",
+    dummy_raca == 0 ~ "Brancos/Amarelos"
+  ),
+  Ocupação = case_when(
+    VD4001 == 1 ~ "Trabalha",
+    VD4001 == 2 ~ "Não Trabalha"
+  ),
+  Remuneração = case_when(
+    dummy_remunerado == 1 ~ "Com Rendimentos",
+    dummy_remunerado == 0 ~ "Sem Rendimentos"
+  ))
+
+# Calcular o somatório por estado e gênero
+tabela_somatorio <- tabela_contagem_raca %>%
+  group_by(Estado, Gênero) %>%
+  summarize(Total_Pessoas = sum(`Pessoas (qtd.)`)) %>%
+  ungroup()
+
+# Juntar as tabelas de contagem e somatório
+tabela_contagem_raca <- tabela_contagem_raca %>%
+  left_join(tabela_somatorio, by = c("Estado", "Gênero")) %>%
+  mutate(Percentual = (`Pessoas (qtd.)` / Total_Pessoas) * 100) %>%
+  dplyr::select(-Total_Pessoas)
+
+# Ordenar a tabela em ordem alfabética por Estado
+tabela_contagem_raca <- tabela_contagem_raca %>%
+  arrange(Estado)
+
+# Remover as colunas indesejadas
+tabela_contagem_raca <- tabela_contagem_raca %>%
+  dplyr::select(-dummy_sexo, -dummy_raca, -VD4001, -dummy_remunerado)
+
+# Criar a tabela
+tabela_somatorio_raca <- datatable(tabela_contagem_raca, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_somatorio_raca
+
+
+```
+  
+<br>
+<br>
+<br>
+  
+### Analisando a PIA separando os grupos **Raça** e **Gênero** por **Tipo de ocupação**  
+  
+Efetuaremos agora uma análise sobre o tipo de ocupação apresentada pela pesquisa. As categorias de ocupação foram identificadas na PNADC como:  
+  
+1. `V4012 = 1`, "Trabalhador doméstico",  
+2. `V4012 = 2`, "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro",  
+3. `V4012 = 3`, "Empregado do setor privado (com carteira)",  
+4. `V4012 = 4`, "Empregado do setor público",  
+5. `V4012 = 5`, "Empregador",  
+6. `V4012 = 6`, "Autônomo",  
+7. `V4012 = 7`, "Trabalhador familiar não remunerado",  
+8. `V4012 = 0`, "Trabalhador informal (sem carteira)"  
+  
+<p style="text-align: justify;">**OBS:** o grupo `V4012 = 0` foi reportado na PNADC como `N/A` (não aplicado) e, para esta análise, enquadramos como os indivíduos que trabalham na informalidade (sem carteira assinada). Também levamos em conta a diferença dos grupos `Empregado do setor público` e `Militar do exército, marinha, aeronáutica, política militar ou bombeiro`, conforme apresenta o **dicionário da PNADC** que pode ser acessado pelo [clicando aqui](https://ftp.ibge.gov.br/Trabalho_e_Rendimento/Pesquisa_Nacional_por_Amostra_de_Domicilios_continua/Anual/Microdados/Visita/Visita_1/Documentacao/dicionario_PNADC_microdados_2019_visita1_20220224.xls).</p>    
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_trabalho <- Painel3_pia %>%
+  dplyr::select(UPA, dummy_sexo, dummy_raca, V2009, V4012, Estado)
+
+# Renomear as categorias de trabalho
+Painel3_pia_trabalho <- Painel3_pia_trabalho %>%
+  mutate(Categoria_trabalho = case_when(
+    V4012 == 1 ~ "Trabalhador doméstico",
+    V4012 == 2 ~ "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro",
+    V4012 == 3 ~ "Empregado do setor privado (com carteira)",
+    V4012 == 4 ~ "Empregado do setor público",
+    V4012 == 5 ~ "Empregador",
+    V4012 == 6 ~ "Autônomo",
+    V4012 == 7 ~ "Trabalhador familiar não remunerado",
+    V4012 == 0 ~ "Trabalhador informal (sem carteira)"))
+
+# Criar tabela com as informações de interesse
+tabela_trabalho <- Painel3_pia_trabalho %>%
+  dplyr::group_by(V2009, Categoria_trabalho, Estado, dummy_sexo, dummy_raca) %>%
+  dplyr::summarize(Numero_Pessoas = n()) %>%
+  dplyr::mutate("Gênero" = ifelse(dummy_sexo == 0, "Mulheres", "Homens"),
+                "Raça" = ifelse(dummy_raca == 0, "Pessoas Brancas/Amarelas", "Pessoas Pretas/Pardas/Indígenas")) %>%
+  dplyr::ungroup() %>%
+  dplyr::rename("Idade (anos)" = V2009,
+                "Tipo de Ocupação" = Categoria_trabalho,
+                "Pessoas (qtd.)" = Numero_Pessoas) %>%
+  dplyr::mutate(across(c("Gênero", "Raça"), as.character)) %>%
+  dplyr::select("Idade (anos)", "Gênero", "Raça", "Tipo de Ocupação", "Pessoas (qtd.)") # Reordenar as colunas
+
+# Criar a tabela
+tabela_cont3 <- datatable(tabela_trabalho, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont3
+
+```
+  
+<br>
+<br>
+  
+Efetuando um somatório a fim de vermos o total, temos:  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as categorias relevantes para os totais
+Painel3_pia_trabalho_filt <- Painel3_pia_trabalho %>%
+  filter(dummy_sexo %in% c(0, 1))  # Filtrar homens e mulheres
+
+# Tabela para homens que são Pessoas Brancas/Amarelas
+tabela_homens_branco <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca == 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para homens que são Pessoas Pretas/Pardas/Indígenas
+tabela_homens_preta <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca != 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Brancas/Amarelas
+tabela_mulheres_branco <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca == 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Pretas/Pardas/Indígenas
+tabela_mulheres_preta <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca != 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Juntar todas as tabelas em uma única tabela
+tabela_total <- bind_rows(tabela_homens_branco, tabela_homens_preta, tabela_mulheres_branco, tabela_mulheres_preta)
+
+# Calcular os percentuais por grupo de gênero e raça
+tabela_total <- tabela_total %>%
+  group_by(Gênero, Raça) %>%
+  mutate(Percentual = (Total / sum(Total)) * 100) %>%
+  ungroup()
+
+# Reordenar as colunas da tabela final
+tabela_total <- tabela_total %>%
+  dplyr::select(Gênero, Raça, Categoria_trabalho = Categoria_trabalho, Total, Percentual) %>% 
+  dplyr::rename("Tipo de Ocupação" = Categoria_trabalho)
+
+# Criar a tabela
+tabela_cont_total <- datatable(tabela_total, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont_total
+
+```
+  
+<br>
+<br>
+<br>
+<br>
+  
+### Ilustrando a **Participação na força de trabalho** por **Idade**, **Raça**, **Gênero** e **Tipo de ocupação**.    
+  
+#### Gráfico: Participação de homens e mulheres conforme categoria de raças nos tipos de ocupação:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as categorias relevantes para os totais
+Painel3_pia_trabalho_filt <- Painel3_pia_trabalho %>%
+  filter(dummy_sexo %in% c(0, 1))  # Filtrar homens e mulheres
+
+# Tabela para homens que são Pessoas Brancas/Amarelas
+tabela_homens_branco <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca == 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para homens que são Pessoas Pretas/Pardas/Indígenas
+tabela_homens_preta <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca != 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Brancas/Amarelas
+tabela_mulheres_branco <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca == 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Pretas/Pardas/Indígenas
+tabela_mulheres_preta <- Painel3_pia_trabalho_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca != 0) %>%
+  group_by(Categoria_trabalho) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Juntar todas as tabelas em uma única tabela
+tabela_total <- bind_rows(tabela_homens_branco, tabela_homens_preta, tabela_mulheres_branco, tabela_mulheres_preta)
+
+# Calcular os percentuais por grupo de gênero e raça
+tabela_total <- tabela_total %>%
+  group_by(Gênero, Raça) %>%
+  mutate(Percentual = (Total / sum(Total)) * 100) %>%
+  ungroup()
+
+# Criar os gráficos
+grafico_part_homens <- ggplot(filter(tabela_total, Gênero == "Homens"), aes(x = Categoria_trabalho, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Tipo de Ocupação", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Homens)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardas/Indígenas"))
+
+grafico_part_mulheres <- ggplot(filter(tabela_total, Gênero == "Mulheres"), aes(x = Categoria_trabalho, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Tipo de Ocupação", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Mulheres)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardas/Indígenas"))
+
+# Exibir os gráficos
+print(grafico_part_homens)
+print(grafico_part_mulheres)
+
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Trabalhador doméstico**:
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_domestico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador doméstico")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_domestico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador doméstico")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_domestico <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_domestico, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_domestico, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_domestico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador doméstico")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_domestico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador doméstico")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_domestico <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_domestico, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_domestico, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# Exibir o gráfico
+print(grafico_homem_domestico)
+print(grafico_mulher_domestico)
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Militar**:
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_militar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_militar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_militar <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_militar, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_militar, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_militar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_militar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_militar <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_militar, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_militar, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homem_militar)
+print(grafico_mulher_militar)
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Empregado do setor privado**:
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_privado <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Empregado do setor privado (com carteira)")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_privado <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Empregado do setor privado (com carteira)")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_privado <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_privado, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_privado, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_privado <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregado do setor privado (com carteira)")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_privado <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregado do setor privado (com carteira)")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_privado <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_privado, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_privado, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# Exibir o gráfico
+print(grafico_homem_privado)
+print(grafico_mulher_privado)
+
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Empregado do setor público**:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_publico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Empregado do setor público")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_publico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Empregado do setor público")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_publico <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_publico, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_publico, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_publico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregado do setor público")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_publico <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregado do setor público")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_publico <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_publico, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_publico, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homem_publico)
+print(grafico_mulher_publico)
+
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Empregador**:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_empregador <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Empregador")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_empregador <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Empregador")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_empregador <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_empregador, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_empregador, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_empregador <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregador")
+
+# Filtrar os dados para mulheres pretos/pardos/indígenas
+mulheres_preto_pardo_indigena_empregador <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Empregador")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_empregador <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_empregador, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_empregador, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homem_empregador)
+print(grafico_mulher_empregador)
+
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Autônomos**:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_autonomo <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Autônomo")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_autonomo <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Autônomo")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_autonomo <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_autonomo, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_autonomo, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_autonomo <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Autônomo")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_autonomo <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Autônomo")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_autonomo <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_autonomo, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_autonomo, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homem_autonomo)
+print(grafico_mulher_autonomo)
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas atuando como **Trabalhador familiar não remunerado**:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_familiar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador familiar não remunerado")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_familiar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador familiar não remunerado")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homem_familiar <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_familiar, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_familiar, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_familiar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador familiar não remunerado")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_familiar <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador familiar não remunerado")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulher_familiar <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_familiar, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_familiar, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homem_familiar)
+print(grafico_mulher_familiar)
+
+```
+  
+<br>
+<br>
+  
+#### Gráfico: Participação de homens e mulheres brancos/amarelos comparados com pretos/pardos/indígenas e **Trabalhador informal (sem carteira)**:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para homens brancos
+homens_branco_informal <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador informal (sem carteira)")
+
+# Filtrar os dados para homens pretos/pardos/indígenas
+homens_preto_pardo_indigena_informal <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Homens", `Tipo de Ocupação` == "Trabalhador informal (sem carteira)")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_homens_informal <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = homens_branco_informal, stat = "identity", position = "identity") +
+  geom_bar(data = homens_preto_pardo_indigena_informal, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Homens)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "lightgreen", "Pessoas Pretas/Pardas/Indígenas" = "darkgreen")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+
+# Filtrar os dados para mulheres brancas
+mulheres_branco_informal <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Brancas/Amarelas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador informal (sem carteira)")
+
+# Filtrar os dados para mulheres pretas/pardas/indígenas
+mulheres_preto_pardo_indigena_informal <- tabela_trabalho %>%
+  filter(Raça == "Pessoas Pretas/Pardas/Indígenas", Gênero == "Mulheres", `Tipo de Ocupação` == "Trabalhador informal (sem carteira)")
+
+# Criar o gráfico de barras com barras sobrepostas e legenda das cores abaixo
+grafico_mulheres_informal <- ggplot(tabela_trabalho, aes(x = `Idade (anos)`, y = `Pessoas (qtd.)`, fill = Raça)) +
+  geom_bar(data = mulheres_branco_informal, stat = "identity", position = "identity") +
+  geom_bar(data = mulheres_preto_pardo_indigena_informal, stat = "identity", position = "identity", alpha = 0.5) +
+  labs(x = "Idade", y = "Quantidade (Mulheres)", fill = "Raça") +
+  scale_fill_manual(values = c("Pessoas Brancas/Amarelas" = "pink", "Pessoas Pretas/Pardas/Indígenas" = "magenta")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+# Exibir o gráfico
+print(grafico_homens_informal)
+print(grafico_mulheres_informal)
+```
+  
+<br>
+<br>
+<br>
+  
+### Analisando a PIA separando os grupos **Raça** e **Gênero** por **Anos de Estudo**  
+  
+Efetuaremos agora uma análise sobre os anos de estudo apresentada pela pesquisa. As categorias foram identificadas na PNADC como:  
+  
+1. `VD3004 = "1"` = "Sem instrução e menos de 1 ano de estudo",  
+2. `VD3004 = "2"` = "Fundamental incompleto ou equivalente",  
+3. `VD3004 = "3"` = "Fundamental completo ou equivalente",  
+4. `VD3004 = "4"` = "Médio incompleto ou equivalente",  
+5. `VD3004 = "5"` = "Médio completo ou equivalente",  
+6. `VD3004 = "6"` = "Superior incompleto ou equivalente",  
+7. `VD3004 = "7"` = "Superior completo".   
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as colunas relevantes
+Painel3_pia_estudo <- Painel3_pia %>%
+  dplyr::select(UPA, dummy_sexo, dummy_raca, V2009, VD3004, Estado)
+
+# Renomear as categorias de anos de estudo
+Painel3_pia_estudo <- Painel3_pia_estudo %>%
+  mutate(Anos_de_Estudo = case_when(
+    VD3004 == "1" ~ "Sem instrução e menos de 1 ano de estudo",
+    VD3004 == "2" ~ "Fundamental incompleto ou equivalente",
+    VD3004 == "3" ~ "Fundamental completo ou equivalente",
+    VD3004 == "4" ~ "Médio incompleto ou equivalente",
+    VD3004 == "5" ~ "Médio completo ou equivalente",
+    VD3004 == "6" ~ "Superior incompleto ou equivalente",
+    VD3004 == "7" ~ "Superior completo"))
+
+# Criar tabela com as informações de interesse
+tabela_estudo <- Painel3_pia_estudo %>%
+  dplyr::group_by(V2009, Anos_de_Estudo, Estado, dummy_sexo, dummy_raca) %>%
+  dplyr::summarize(Numero_Pessoas = n()) %>%
+  dplyr::mutate("Gênero" = ifelse(dummy_sexo == 0, "Mulheres", "Homens"),
+                "Raça" = ifelse(dummy_raca == 0, "Pessoas Brancas/Amarelas", "Pessoas Pretas/Pardas/Indígenas")) %>%
+  dplyr::ungroup() %>%
+  dplyr::rename("Idade (anos)" = V2009,
+                "Anos de Estudo" = Anos_de_Estudo,
+                "Pessoas (qtd.)" = Numero_Pessoas) %>%
+  dplyr::mutate(across(c("Gênero", "Raça"), as.character)) %>%
+  dplyr::select("Idade (anos)", "Gênero", "Raça", "Anos de Estudo", "Pessoas (qtd.)") # Reordenar as colunas
+
+# Criar a tabela
+tabela_cont6 <- datatable(tabela_estudo, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_cont6
+
+
+```
+  
+<br>
+<br>
+  
+Efetuando um somatório a fim de vermos o total, temos:  
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as categorias relevantes para os totais
+Painel3_pia_estudo_filt <- Painel3_pia_estudo %>%
+  filter(dummy_sexo %in% c(0, 1))  # Filtrar homens e mulheres
+
+# Tabela para homens que são Pessoas Brancas/Amarelas
+tabela_homens_branco <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca == 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup() %>%
+  mutate(Percentual = (Total / sum(Total)) * 100)
+
+# Tabela para homens que são Pessoas Pretas/Pardas/Indígenas
+tabela_homens_preta <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca != 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup() %>%
+  mutate(Percentual = (Total / sum(Total)) * 100)
+
+# Tabela para mulheres que são Pessoas Brancas/Amarelas
+tabela_mulheres_branco <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca == 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup() %>%
+  mutate(Percentual = (Total / sum(Total)) * 100)
+
+# Tabela para mulheres que são Pessoas Pretas/Pardas/Indígenas
+tabela_mulheres_preta <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca != 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup() %>%
+  mutate(Percentual = (Total / sum(Total)) * 100)
+
+# Juntar todas as tabelas em uma única tabela
+tabela_total <- bind_rows(tabela_homens_branco, tabela_homens_preta, tabela_mulheres_branco, tabela_mulheres_preta)
+
+# Reordenar as colunas da tabela final
+tabela_total <- tabela_total %>%
+  dplyr::select(Gênero, Raça, Anos_de_Estudo, Total, Percentual) %>% 
+  dplyr::rename("Anos de Estudo" = Anos_de_Estudo,
+                "Pessoas (qtd.)" = Total,
+                "Percentual (%)" = Percentual)
+
+# Criar a tabela
+tabela_estudo_cont_total <- datatable(tabela_total, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_estudo_cont_total
+
+```
+  
+<br>
+<br>
+<br>
+<br>
+  
+### Ilustrando os grupos de gênero e raça conforme os anos de estudo.    
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar apenas as categorias relevantes para os totais
+Painel3_pia_estudo_filt <- Painel3_pia_estudo %>%
+  filter(dummy_sexo %in% c(0, 1))  # Filtrar homens e mulheres
+
+# Tabela para homens que são Pessoas Brancas/Amarelas
+tabela_homens_branco <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca == 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para homens que são Pessoas Pretas/Pardas/Indígenas
+tabela_homens_preta <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 0 & dummy_raca != 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Homens",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Brancas/Amarelas
+tabela_mulheres_branco <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca == 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Brancas/Amarelas") %>%
+  ungroup()
+
+# Tabela para mulheres que são Pessoas Pretas/Pardas/Indígenas
+tabela_mulheres_preta <- Painel3_pia_estudo_filt %>%
+  filter(dummy_sexo == 1 & dummy_raca != 0) %>%
+  group_by(Anos_de_Estudo) %>%
+  summarize(Total = n()) %>%
+  mutate(Gênero = "Mulheres",
+         Raça = "Pessoas Pretas/Pardas/Indígenas") %>%
+  ungroup()
+
+# Juntar todas as tabelas em uma única tabela
+tabela_total <- bind_rows(tabela_homens_branco, tabela_homens_preta, tabela_mulheres_branco, tabela_mulheres_preta)
+
+# Calcular os percentuais por grupo de gênero e raça
+tabela_total <- tabela_total %>%
+  group_by(Gênero, Raça) %>%
+  mutate(Percentual = (Total / sum(Total)) * 100) %>%
+  ungroup()
+
+# Criar os gráficos
+grafico_perc_est_homens <- ggplot(filter(tabela_total, Gênero == "Homens"), aes(x = Anos_de_Estudo, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Anos de Estudo", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Homens)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardas/Indígenas"))
+
+grafico_perc_est_mulheres <- ggplot(filter(tabela_total, Gênero == "Mulheres"), aes(x = Anos_de_Estudo, y = Percentual, fill = Raça)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Anos de Estudo", y = "Percentual", fill = "Raça") +
+  ggtitle("Percentual de Raça por Gênero (Mulheres)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_discrete(name = "Raça", labels = c("Brancos/Amarelos", "Pretos/Pardas/Indígenas"))
+
+# Exibir os gráficos
+print(grafico_perc_est_homens)
+print(grafico_perc_est_mulheres)
+
+```
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+## Passo 5: Analisando o componente salarial para os grupos **Raça**, **Gênero**, **Tipo de ocupação** e **Anos de estudo**  
+  
+<p style="text-align: justify;">A análise descritiva prossegue com a elaboração de gráficos e tabelas contendo estatísticas descritivas das variáveis criadas. Um ponto de atenção é garantir que as definições das variáveis estejam adequadas à PNADC.</p>  
+  
+<p style="text-align: justify;">No caso dos indivíduos que trabalham, será elaborada uma tabela com a média, desvio-padrão, mínimo e máximo dos rendimentos mensais.</p>  
+  
+<p style="text-align: justify;">Essa análise permitirá compreender o comportamento dos rendimentos mensais para diferentes tipos de ocupação, considerando tanto o setor formal quanto o informal da economia. Com esses dados descritivos, poderemos ter uma visão ampla da distribuição dos rendimentos salariais para os grupos de interesse, possibilitando identificar possíveis diferenças salariais entre raças, gêneros, níveis de educação e ocupações.</p>  
+  
+<p style="text-align: justify;">Essa primeira etapa de análise descritiva será fundamental para fornecer insights e subsidiar as análises mais aprofundadas do Passo 5, onde abordaremos o componente salarial dos grupos Raça, Gênero, Tipo de ocupação e Anos de estudo. Com essas informações em mãos, poderemos realizar uma análise mais robusta e embasada sobre as desigualdades salariais e suas possíveis causas.</p>  
+  
+<br>
+<br>
+<br>
+  
+### Analisando os valores de **Salário_Hora** para os grupos de **Gênero** e **Raça**
+  
+<p style="text-align: justify;">Vamos relembrara aqui que a proposta de análise dos dados referentes a salário bruto mensal, verificado pela PNADC com a variável `V403312`, consideram o valor nominal em Reais (R$). Tendo isso em vista, incluiremos a variável `salario_hora` em nosso modelo a partir da divisão do rendimento bruto mensal por 4 (equivalendo a 4 semanas em um mês), e em seguida, dividindo pela variável `V4039` que equivale ao total de horas trabalhadas por semana:</p>  
+  
+```{r, warning=FALSE, message=FALSE}
+# Criar a nova coluna "salario_hora"
+Painel3_pia <- Painel3_pia %>%
+  mutate(salario_hora = V403312 / 4 / V4039)
+
+# Substituir valores vazios (NaN) por zero na variável "salario_hora" do banco de dados "Painel3_pia"
+Painel3_pia$salario_hora <- replace(Painel3_pia$salario_hora, is.nan(Painel3_pia$salario_hora), 0)
+
+write.csv(Painel3_pia, file = "painel_pnad.csv", row.names = FALSE)
+```
+  
+<br>
+  
+<p style="text-align: justify;">Na sequência, iniciaremos um novo filtro para o banco de dados `Painel3_pia` considerando os grupos de **Gênero** e **Raça**, resultando na seguinte tabela:</p>  
+ 
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar o novo banco de dados "PIA_salario1"
+PIA_salario1 <- Painel3_pia %>% 
+  dplyr::mutate(
+    Idade = V2009,
+    Estado,
+    Gênero = ifelse(dummy_sexo == 1, "Homens", "Mulheres"),
+    Raça = ifelse(dummy_raca == 1, "PPI", "Brancos/Amarelos"),
+    Salário_Hora = round(salario_hora, 2)
+  ) %>% 
+  dplyr::select(Idade, Estado, Gênero, Raça, Salário_Hora)
+
+# Retificar a tabela e efetuar o somatório da coluna "Idade"
+tabela_PIA_salario1 <- PIA_salario1 %>% 
+  group_by(Estado, Gênero, Raça, Salário_Hora) %>%
+  summarise(Total = sum(Idade)) %>%
+  arrange(Estado)
+
+# Criar a tabela
+tabela_PIA_salario2 <- datatable(tabela_PIA_salario1, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_PIA_salario2
+
+```
+  
+<br>
+  
+<p style="text-align: justify;">Com isso já podemos resumir os valores de Mínimo, Máximo, Média, Mediana e Desvio-Padrão dos valores respectivos aos salários de pessoas conforme o Gênero e a Raça, para toda a Região Nordeste.</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar a tabela resumo a partir do banco de dados "PIA_salario1"
+tabela_resumo_salario1 <- PIA_salario1 %>%
+  group_by(Gênero, Raça) %>%
+  summarise(
+    Mínimo = min(Salário_Hora),
+    Máximo = max(Salário_Hora),
+    Média = mean(Salário_Hora),
+    Mediana = median(Salário_Hora),
+    Desvio_Padrão = sd(Salário_Hora)
+  )
+
+kable(head(tabela_resumo_salario1)) %>% 
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+    
+<br>
+  
+<p style="text-align: justify;">Passaremos agora para a visualização dos dados por meio do gráfico de `boxplot`, representado por caixas (boxes) no gráfico, ilustrando a distribuição dos salários médios por hora para cada grupo de gênero (homens e mulheres) e raça (PPI e Brancos/Amarelos). A linha no centro de cada caixa representa a mediana dos salários, enquanto a parte inferior da caixa indica o primeiro quartil (25%) e a parte superior, o terceiro quartil (75%).</p>  
+  
+<p style="text-align: justify;">Os pontos acima das caixas representam os valores médios dos salários para cada grupo. Além disso, as barras verticais que se estendem acima e abaixo das caixas representam os intervalos de confiança para o desvio-padrão, ou seja, a variação dos salários em torno da média.</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Carregando o pacote ggplot2
+library(ggplot2)
+
+# Dados da tabela resumo
+tabela_resumo_salario1 <- data.frame(
+  Gênero = c("Homens", "Homens", "Mulheres", "Mulheres"),
+  Raça = c("PPI", "Brancos/Amarelos", "PPI", "Brancos/Amarelos"),
+  Mínimo = c(0, 0, 0, 0),
+  Máximo = c(1250.0, 1875.0, 562.5, 500.0),
+  Média = c(6.325020, 4.021296, 3.844528, 2.359862),
+  Mediana = c(3.23, 2.50, 0.00, 0.00),
+  Desvio_Padrão = c(15.339110, 10.064948, 10.159497, 6.413519)
+)
+
+# Definindo as cores para cada categoria
+cores <- c("#1F78B4", "magenta", "#E31A1C", "#FFA07A")
+
+# Criando o gráfico de boxplot
+ggplot(tabela_resumo_salario1, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+```
+<br>
+<br>
+<br>
+
+### Analisando os valores de **Salário_Hora** para os grupos de **Gênero**, **Raça** e **Anos de Estudo**.
+  
+<p style="text-align: justify;">De igual modo filtramos para "Anos de Estudo", a fim de verificar o mínimo, máximo, média, mediana e desvio padrão dos "Salário_Hora" para cada grupo de "Raça" e "Gênero", primeiro separado por estados, conforme a tabela a seguir.</p>  
+    
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar o novo banco de dados "PIA_salario2"
+PIA_salario2 <- Painel3_pia %>% 
+  dplyr::mutate(
+    Idade = V2009,
+    Estado,
+    Gênero = ifelse(dummy_sexo == 1, "Homens", "Mulheres"),
+    Raça = ifelse(dummy_raca == 1, "PPI", "Brancos/Amarelos"),
+    Salário_Hora = round(salario_hora, 2),
+    Anos_de_Estudo = case_when(
+      VD3004 == "1" ~ "Sem instrução e menos de 1 ano de estudo",
+      VD3004 == "2" ~ "Fundamental incompleto ou equivalente",
+      VD3004 == "3" ~ "Fundamental completo ou equivalente",
+      VD3004 == "4" ~ "Médio incompleto ou equivalente",
+      VD3004 == "5" ~ "Médio completo ou equivalente",
+      VD3004 == "6" ~ "Superior incompleto ou equivalente",
+      VD3004 == "7" ~ "Superior completo",
+      TRUE ~ "Outro"
+    )
+  ) %>% 
+  dplyr::select(Idade, Estado, Gênero, Raça, Salário_Hora, Anos_de_Estudo) %>% 
+  arrange(Estado)
+
+# Criar a nova tabela com o total de pessoas por Gênero, Raça, Salário_Hora e Anos_de_Estudo
+total_pessoas1 <- PIA_salario2 %>%
+  group_by(Gênero, Raça, Salário_Hora, Anos_de_Estudo) %>%
+  summarise(Total_Pessoas = n())
+
+# Criar a tabela
+tabela_PIA_salario3 <- datatable(total_pessoas1, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_PIA_salario3
+```
+  
+<br>
+  
+<p style="text-align: justify;">Dessa forma, podemos então efetuar o resumo do total das estatísticas descritivas dentro dos grupos "Gênero" e "Raça", para cada "Ano de Estudo".</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar a tabela resumo
+tabela_resumo_salario3 <- total_pessoas1 %>%
+  group_by(Gênero, Raça, Anos_de_Estudo) %>%
+  summarise(
+    Mínimo = min(Salário_Hora),
+    Máximo = max(Salário_Hora),
+    Média = mean(Salário_Hora),
+    Mediana = median(Salário_Hora),
+    Desvio_Padrão = sd(Salário_Hora)
+  )
+
+# Criar a tabela
+tabela_resumo_salario4 <- datatable(tabela_resumo_salario3, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_resumo_salario4
+
+```
+  
+<br>
+  
+<p style="text-align: justify;">Os gráficos, a seguir, permitem visualizar a variação salarial dentro de cada grupo "Anos de estudo", bem como identificar diferenças significativas entre os grupos de gênero e raça para cada nível de escolaridade.</p>  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(gridExtra)
+
+# Filtrar os dados apenas para o grupo "Sem instrução e menos de 1 ano de estudo"
+grupo_anos_estudo <- "Sem instrução e menos de 1 ano de estudo"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+# Definir as cores para os grupos de Gênero
+cores <- c("#1F78B4", "#E31A1C")
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_1 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Fundamental incompleto ou equivalente"
+grupo_anos_estudo <- "Fundamental incompleto ou equivalente"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_2 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Fundamental completo ou equivalente"
+grupo_anos_estudo <- "Fundamental completo ou equivalente"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_3 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Médio incompleto ou equivalente"
+grupo_anos_estudo <- "Médio incompleto ou equivalente"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_4 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Médio completo ou equivalente"
+grupo_anos_estudo <- "Médio completo ou equivalente"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_5 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Superior incompleto ou equivalente"
+grupo_anos_estudo <- "Superior incompleto ou equivalente"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_6 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+# Filtrar os dados apenas para o grupo "Superior completo"
+grupo_anos_estudo <- "Superior completo"
+dados_grupo <- tabela_resumo_salario3 %>%
+  filter(Anos_de_Estudo == grupo_anos_estudo)
+
+
+# Criar o gráfico de boxplot com intervalo de confiança para o desvio-padrão
+grafico_media_estudo_7 <- ggplot(dados_grupo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = paste("Diferença Salarial por Gênero e Raça\nAnos de Estudo:", grupo_anos_estudo),
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))), 
+            position = position_dodge(width = 0.8), 
+            vjust = -1.5, 
+            size = 3)
+
+
+plot(grafico_media_estudo_1)
+plot(grafico_media_estudo_2)
+plot(grafico_media_estudo_3)
+plot(grafico_media_estudo_4)
+plot(grafico_media_estudo_5)
+plot(grafico_media_estudo_6)
+plot(grafico_media_estudo_7)
+
+
+```
+  
+  
+<br>
+<br>
+<br>
+
+### Analisando os valores de **Salário_Hora** para os grupos de **Gênero**, **Raça** e **Tipos de Ocupação**.  
+  
+<p style="text-align: justify;">Iremos agora filtrar para "Tipos de Ocupação", a fim de verificar o mínimo, máximo, média, mediana e desvio padrão dos "Salário_Hora" para cada grupo de "Raça" e "Gênero", primeiro separado por estados, conforme a tabela a seguir.</p>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar o novo banco de dados "PIA_salario3"
+PIA_salario3 <- Painel3_pia %>% 
+  dplyr::mutate(
+    Idade = V2009,
+    Estado,
+    Gênero = ifelse(dummy_sexo == 1, "Homens", "Mulheres"),
+    Raça = ifelse(dummy_raca == 1, "PPI", "Brancos/Amarelos"),
+    Salário_Hora = round(salario_hora, 2),
+    Tipos_de_Ocupação = case_when(
+      V4012 == "1" ~ "Trabalhador doméstico",
+      V4012 == "2" ~ "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro",
+      V4012 == "3" ~ "Empregado do setor privado (com carteira)",
+      V4012 == "4" ~ "Empregado do setor público",
+      V4012 == "5" ~ "Empregador",
+      V4012 == "6" ~ "Autônomo",
+      V4012 == "7" ~ "Trabalhador familiar não remunerado",
+      V4012 == "0" ~ "Trabalhador informal (sem carteira)",
+      TRUE ~"Outro"
+      
+      )
+  ) %>% 
+  dplyr::select(Idade, Estado, Gênero, Raça, Salário_Hora, Tipos_de_Ocupação) %>% 
+  arrange(Estado)
+
+# Criar a nova tabela com o total de pessoas por Gênero, Raça, Salário_Hora e Tipos_de_Ocupação
+total_pessoas5 <- PIA_salario3 %>%
+  group_by(Gênero, Raça, Salário_Hora, Tipos_de_Ocupação) %>%
+  summarise(Total_Pessoas = n())
+
+# Criar a tabela
+tabela_PIA_salario5 <- datatable(total_pessoas5, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_PIA_salario5
+
+```
+  
+<br>
+  
+<p style="text-align: justify;">Podemos agora efetuar o resumo do total das estatísticas descritivas dentro dos grupos "Gênero" e "Raça", para cada "Tipo de Ocupação".</p>  
+  
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Criar a tabela resumo
+tabela_resumo_salario7 <- total_pessoas5 %>%
+  group_by(Gênero, Raça, Tipos_de_Ocupação) %>%
+  summarise(
+    Mínimo = min(Salário_Hora),
+    Máximo = max(Salário_Hora),
+    Média = mean(Salário_Hora),
+    Mediana = median(Salário_Hora),
+    Desvio_Padrão = sd(Salário_Hora)
+  )
+
+# Criar a tabela
+tabela_resumo_salario9 <- datatable(tabela_resumo_salario7, options = list(pageLength = 10))
+
+# Renderizar a tabela
+tabela_resumo_salario9
+```
+  
+<br>
+<br>
+  
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Filtrar os dados para o grupo "Trabalhador doméstico"
+grupo_domestico <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Trabalhador doméstico")
+
+# Criar o gráfico de boxplot para o grupo "Trabalhador doméstico"
+cores <- c("#1F78B4", "#E31A1C")  # Definir as cores para cada grupo de Gênero
+grafico_media_trabalho1 <- ggplot(grupo_domestico, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Trabalhador doméstico)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+# Filtrar os dados para o grupo "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro"
+grupo_militar <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro")
+
+# Criar o gráfico de boxplot para o grupo "Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro"
+grafico_media_trabalho2 <- ggplot(grupo_militar, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Militar do exército, marinha, aeronáutica, polícia militar ou bombeiro)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+# Filtrar os dados para o grupo "Empregado do setor privado (com carteira)"
+grupo_empregado_privado <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Empregado do setor privado (com carteira)")
+
+# Criar o gráfico de boxplot para o grupo "Empregado do setor privado (com carteira)"
+grafico_media_trabalho3 <- ggplot(grupo_empregado_privado, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Empregado do setor privado com carteira)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+
+# Filtrar os dados para o grupo "Empregado do setor público"
+grupo_empregado_publico <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Empregado do setor público")
+
+# Criar o gráfico de boxplot para o grupo "Empregado do setor público"
+grafico_media_trabalho4 <- ggplot(grupo_empregado_publico, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Empregado do setor público)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+# Filtrar os dados para o grupo "Empregador"
+grupo_empregador <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Empregador")
+
+# Criar o gráfico de boxplot para o grupo "Empregador"
+grafico_media_trabalho5 <- ggplot(grupo_empregador, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Empregador)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+# Filtrar os dados para o grupo "Autônomo"
+grupo_autonomo <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Autônomo")
+
+# Criar o gráfico de boxplot para o grupo "Autônomo"
+grafico_media_trabalho6 <- ggplot(grupo_autonomo, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Autônomo)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+
+# Filtrar os dados para o grupo "Trabalhador familiar não remunerado"
+grupo_trabalhador_familiar <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Trabalhador familiar não remunerado")
+
+# Criar o gráfico de boxplot para o grupo "Trabalhador familiar não remunerado"
+grafico_media_trabalho7 <- ggplot(grupo_trabalhador_familiar, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Trabalhador familiar não remunerado)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+
+# Filtrar os dados para o grupo "Trabalhador informal (sem carteira)"
+grupo_trabalhador_informal <- tabela_resumo_salario7 %>%
+  filter(Tipos_de_Ocupação == "Trabalhador informal (sem carteira)")
+
+# Criar o gráfico de boxplot para o grupo "Trabalhador informal (sem carteira)"
+grafico_media_trabalho8 <- ggplot(grupo_trabalhador_informal, aes(x = Raça, y = Média, fill = Gênero)) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.2), size = 3, shape = 21, color = "black") +
+  stat_summary(fun = median, geom = "point", size = 5, shape = 4, color = "black", show.legend = FALSE) +
+  geom_errorbar(aes(ymin = Média - Desvio_Padrão, ymax = Média + Desvio_Padrão), 
+                width = 0.2, position = position_dodge(0.75), color = "black") +
+  geom_boxplot(width = 0.2, position = position_dodge(0.75), alpha = 0.5, color = "black") +
+  labs(title = "Diferença Salarial por Gênero e Raça (Trabalhador informal sem carteira)",
+       x = "Raça",
+       y = "Salário Médio por Hora") +
+  scale_fill_manual(values = cores, labels = c("Homens", "Mulheres"),
+                    name = "Gênero", breaks = c("Homens", "Mulheres")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste("Desvio-Padrão:", round(Desvio_Padrão, 2))),
+            position = position_dodge(width = 0.8),
+            vjust = -1.5,
+            size = 3)
+
+
+
+
+plot(grafico_media_trabalho1)
+plot(grafico_media_trabalho2)
+plot(grafico_media_trabalho3)
+plot(grafico_media_trabalho4)
+plot(grafico_media_trabalho5)
+plot(grafico_media_trabalho6)
+plot(grafico_media_trabalho7)
+plot(grafico_media_trabalho8)
+```
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
+## Conclusão da 1ª Parte  
+  
+<p style="text-align: justify;">Com base nas análises realizadas a partir do banco de dados da PNAD Contínua (Painel 3), podemos obter insights importantes sobre a distribuição de salários por hora e sua relação com variáveis como gênero, raça e nível de instrução para a população da Região Nordeste, entrevistadas entre os anos de 2013 e 2015.</p>  
+  
+<p style="text-align: justify;">Diferenças de Gênero e Raça: Ao examinarmos os dados, é possível observar que existem diferenças significativas nos salários por hora entre homens e mulheres, bem como entre pessoas autodeclaradas como PPI (pretas, pardas e indígenas) e brancas/amarelas. Essas diferenças podem indicar disparidades salariais e reforçam a importância de políticas de equidade de gênero e combate ao racismo no ambiente de trabalho.</p>  
+  
+<p style="text-align: justify;">Impacto do Nível de Instrução: Outro fator relevante é o nível de instrução dos indivíduos. Aqueles com maior escolaridade tendem a receber salários mais elevados em comparação com os que possuem menos anos de estudo. Esse padrão destaca a relevância da educação e capacitação profissional como caminhos para obter melhores oportunidades de emprego e remuneração.</p>  
+  
+<p style="text-align: justify;">Variação Salarial: Notamos que existe uma variação nos salários por hora, indicando que há indivíduos com remuneração mais elevada ou mais baixa em relação à média. Essa variação pode ser influenciada por diversos fatores, como experiência profissional, setor de atuação e cargo ocupado.</p>  
+  
+<p style="text-align: justify;">É fundamental considerar essas informações para a tomada de decisões tanto no âmbito político como no empresarial. A busca por uma maior equidade salarial, oportunidades justas e inclusão social deve ser um objetivo constante para construir uma sociedade mais justa e sustentável.</p>  
+  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  
